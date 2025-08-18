@@ -13,26 +13,33 @@
       overflow: hidden;
     }
     #score {
-      font-size: 24px;
-      margin: 20px;
+      font-size: 5vw; /* responsive text */
+      margin: 10px;
     }
     .ball {
       position: absolute;
-      width: 80px;
-      height: 80px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
       font-weight: bold;
       cursor: pointer;
       color: white;
       user-select: none;
       animation: fall 6s linear forwards;
+
+      /* responsive sizing */
+      width: 15vw;
+      height: 15vw;
+      max-width: 100px;
+      max-height: 100px;
+      min-width: 60px;
+      min-height: 60px;
+      font-size: 6vw;
+      max-font-size: 28px;
     }
     @keyframes fall {
-      from { top: -100px; }
+      from { top: -120px; }
       to { top: 100vh; }
     }
   </style>
@@ -54,7 +61,7 @@
       if (roundActive) return;
       roundActive = true;
 
-      // clear leftover
+      // remove leftover
       currentBalls.forEach(ball => ball.remove());
       currentBalls = [];
 
@@ -69,7 +76,7 @@
       const lower = Math.min(num1, num2);
       const diff = higher - lower;
 
-      // create 2 balls in separate halves of screen
+      // create 2 balls in left/right halves
       const ball1 = createBall(num1, "left");
       const ball2 = createBall(num2, "right");
       currentBalls.push(ball1, ball2);
@@ -85,19 +92,21 @@
         setTimeout(spawnBalls, 800);
       }
 
-      // click
+      // click & touch listeners
       [ball1, ball2].forEach(ball => {
-        ball.addEventListener("click", () => {
+        const handler = () => {
           if (!roundActive) return;
           endRound(parseInt(ball.textContent));
-        });
+        };
+        ball.addEventListener("click", handler);
+        ball.addEventListener("touchstart", handler, {passive:true});
       });
 
-      // auto remove when fall complete
+      // auto remove when fall completes
       currentBalls.forEach(ball => {
         ball.addEventListener("animationend", () => {
           if (roundActive) {
-            endRound(null); // missed both
+            endRound(null);
           }
         });
       });
@@ -108,9 +117,8 @@
       ball.className = "ball";
       ball.textContent = value;
 
-      const halfWidth = window.innerWidth / 2 - 100;
+      const halfWidth = window.innerWidth / 2 - 120; // safe zone for ball size
 
-      // place ball in left or right half
       if (side === "left") {
         ball.style.left = Math.random() * halfWidth + "px";
       } else {
@@ -129,8 +137,16 @@
       return ball;
     }
 
-    // start
+    // start game
     spawnBalls();
+
+    // resize fix for responsiveness
+    window.addEventListener("resize", () => {
+      currentBalls.forEach(ball => ball.remove());
+      currentBalls = [];
+      roundActive = false;
+      spawnBalls();
+    });
   </script>
 </body>
 </html>
